@@ -11,7 +11,7 @@ def index(request):
     return render(request, "network/index.html")
 
 
-def login_view(request):
+def login_view(request): 
     if request.method == "POST":
 
         # Attempt to sign user in
