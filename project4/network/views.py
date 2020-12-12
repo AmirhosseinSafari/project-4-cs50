@@ -3,12 +3,40 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.http import JsonResponse
+import json
+from django.views.decorators.csrf import csrf_exempt
 
-from .models import User
+from .models import User, Post
 
-
+@csrf_exempt
 def index(request):
-    return render(request, "network/index.html")
+
+    if request.method == 'POST' and request.user.is_authenticated:
+        
+        data = json.loads(request.body)
+        
+        if data.get("new_post_body") == [""]:
+            return JsonResponse({
+                "error": "Post couldn't be empty"
+            }, status=400)
+        
+        new_post_body = data.get("new_post_body", "")
+
+        post = Post(
+            owner=request.user,
+            body=new_post_body
+        )
+        post.save()
+        
+        return JsonResponse({"message": "Your post saved successfully."}, status=201)
+
+    # Preventing that a user post without login
+    if  request.method == 'POST' and not request.user.is_authenticated:       
+        return HttpResponseRedirect(reverse("login"))
+
+    else:
+        return render(request, "network/index.html")
 
 
 def login_view(request): 
@@ -61,3 +89,5 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "network/register.html")
+
+

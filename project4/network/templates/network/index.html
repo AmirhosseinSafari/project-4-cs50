@@ -1,7 +1,22 @@
 {% extends "network/layout.html" %}
+{% load static %}
 
 {% block body %}
 
+    {% if user.is_authenticated %}
+    <div id="new-post">
+        <form id="new-post-form">
+            <textarea class="form-control" id="new-post-body" placeholder="Write your post..."></textarea>
+            <input type="submit" class="btn btn-primary" id="new-post-submit" value="Post"/>
+        </form>
+    </div>
+    {% endif %}
 
+    <div id="posts">
+    </div>
 
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'network/app.js' %}"></script>
 {% endblock %}
