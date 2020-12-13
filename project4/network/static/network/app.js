@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
-
-    document.querySelector('#new-post-form').onsubmit = send_post;
-
+    
+    if( document.getElementById('#new-post-form') ){
+        document.querySelector('#new-post-form').onsubmit = send_post;
+    }
 });
 
 function send_post(){

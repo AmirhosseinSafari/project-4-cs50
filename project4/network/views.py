@@ -36,7 +36,14 @@ def index(request):
         return HttpResponseRedirect(reverse("login"))
 
     else:
-        return render(request, "network/index.html")
+
+        all_posts = Post.objects.order_by("-timestamp").all()
+
+        content = {
+            "all_posts": all_posts
+        }
+
+        return render(request, "network/index.html", content)
 
 
 def login_view(request): 
@@ -91,3 +98,4 @@ def register(request):
         return render(request, "network/register.html")
 
 
+#def 
