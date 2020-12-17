@@ -6,44 +6,20 @@ from django.urls import reverse
 from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
 
-from .models import User, Post
+from .models import User, Post, Follow
 
 @csrf_exempt
 def index(request):
 
-    if request.method == 'POST' and request.user.is_authenticated:
-        
-        data = json.loads(request.body)
-        
-        if data.get("new_post_body") == [""]:
-            return JsonResponse({
-                "error": "Post couldn't be empty"
-            }, status=400)
-        
-        new_post_body = data.get("new_post_body", "")
+    # Authenticated users view their inbox
+    if request.user.is_authenticated:
+        return render(request, "network/index.html")
 
-        post = Post(
-            owner=request.user,
-            body=new_post_body
-        )
-        post.save()
-        
-        return JsonResponse({"message": "Your post saved successfully."}, status=201)
-
-    # Preventing that a user post without login
-    if  request.method == 'POST' and not request.user.is_authenticated:       
-        return HttpResponseRedirect(reverse("login"))
-
+    # Everyone else is prompted to sign in
     else:
-
-        all_posts = Post.objects.order_by("-timestamp").all()
-
-        content = {
-            "all_posts": all_posts
-        }
-
-        return render(request, "network/index.html", content)
+        return HttpResponseRedirect(reverse("login"))
 
 
 def login_view(request): 
@@ -88,6 +64,12 @@ def register(request):
         try:
             user = User.objects.create_user(username, email, password)
             user.save()
+
+            profile = Follow(
+                person=user,
+            )
+            profile.save()
+
         except IntegrityError:
             return render(request, "network/register.html", {
                 "message": "Username already taken."
@@ -98,4 +80,51 @@ def register(request):
         return render(request, "network/register.html")
 
 
-#def 
+@login_required
+def posts(request):
+    if request.method == 'POST':
+        
+        data = json.loads(request.body)
+        
+        if data.get("new_post_body") == [""]:
+            return JsonResponse({
+                "error": "Post couldn't be empty"
+            }, status=400)
+        
+        new_post_body = data.get("new_post_body", "")
+
+        post = Post(
+            owner=request.user,
+            body=new_post_body
+        )
+        post.save()
+        
+        return JsonResponse({"message": "Your post saved successfully."}, status=201)
+
+    # Preventing that a user post without login
+    if  request.method == 'POST' and not request.user.is_authenticated:       
+        return HttpResponseRedirect(reverse("login"))
+
+    else:
+        # Return posts in reverse chronologial order
+        all_posts = Post.objects.order_by("-timestamp").all()
+
+        return JsonResponse([post.serialize() for post in all_posts], safe=False)
+ 
+
+@login_required
+def profile(request, username):
+    
+    user = User.objects.get(username=username)
+    profile = Follow.objects.get( person=user )
+    username_posts = Post.objects.filter( owner=user )
+
+    username_posts = username_posts.order_by("-timestamp").all()
+
+    content = {
+        'username_posts': [post.serialize() for post in username_posts],
+        'profile': profile.serialize()
+    }
+    return JsonResponse( content, safe=False )
+
+#TODO: def update

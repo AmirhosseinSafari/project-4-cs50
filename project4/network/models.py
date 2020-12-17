@@ -37,8 +37,8 @@ class Post(models.Model):
 class Follow(models.Model):
 
     person = models.ForeignKey("User", on_delete=models.CASCADE, related_name="followed")
-    followers = models.ManyToManyField("User", related_name="following")
-    follows = models.ManyToManyField("User", related_name="follower")
+    followers = models.ManyToManyField("User", related_name="following", blank=True)
+    follows = models.ManyToManyField("User", related_name="follower", blank=True)
 
     def serialize(self):
         return {
