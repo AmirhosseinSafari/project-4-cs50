@@ -69,6 +69,8 @@ def register(request):
                 person=user,
             )
             profile.save()
+            profile.follows.remove(user)
+            profile.save()
 
         except IntegrityError:
             return render(request, "network/register.html", {
@@ -127,4 +129,42 @@ def profile(request, username):
     }
     return JsonResponse( content, safe=False )
 
-#TODO: def update
+@login_required
+@csrf_exempt
+def update_following_followers(request):
+    if request.method == 'PUT':
+        
+        data = json.loads(request.body)
+
+        logged_in_user = data.get("logged_in_user", "")
+        user_page_name = data.get("user_page_name", "")
+        follow_request = data.get("follow_request", "")
+
+        print(follow_request)
+        
+        user_page = User.objects.get(username=user_page_name)
+        person_page = Follow.objects.get(person=user_page)
+        
+        logged_in_user_page = User.objects.get(username=logged_in_user)
+        person_logged_in = Follow.objects.get(person=logged_in_user_page)
+
+        if follow_request == "unfollow":
+            print("here1")
+            person_page.followers.remove(logged_in_user_page)
+            person_logged_in.follows.remove(user_page)
+
+            person_page.save()
+            person_logged_in.save()
+            return JsonResponse({"message": "user unfollowed saved successfully."}, status=201)
+
+        if follow_request == "follow":
+            print("here2")
+            person_page.followers.add(logged_in_user_page)
+            person_logged_in.follows.add(user_page)
+
+            person_page.save()
+            person_logged_in.save()
+            return JsonResponse({"message": "userr followed successfully."}, status=201)
+
+    else:
+        return HttpResponseRedirect(reverse("index"))

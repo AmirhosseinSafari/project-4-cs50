@@ -11,5 +11,5 @@ urlpatterns = [
 
     path("posts", views.posts, name="posts"),
     path("profile/<str:username>", views.profile, name="profile"),
-    #TODO: path(update)
+    path("update_following_followers", views.update_following_followers, name="update_following_followers")
 ]

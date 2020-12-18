@@ -44,7 +44,7 @@ class Follow(models.Model):
         return {
             "user": self.person.username,
             "followers": [user.username for user in self.followers.all()],
-            "follows": [user.username for user in self.followers.all()]
+            "follows": [user.username for user in self.follows.all()]
         }
 
     def followers_count(self):
