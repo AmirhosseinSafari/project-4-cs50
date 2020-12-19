@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     
-    if( document.getElementById('#new-post-form') ){
+    if( document.querySelector('#new-post-form') ){
         document.querySelector('#new-post-form').onsubmit = send_post;
     }
 
@@ -38,12 +38,13 @@ function send_post(){
         })
     })
     .then(response => response.json())
-    .then(result => {
-        console.log(result);
+    .then(posts => {
+        console.log(posts);
 
-        if(result.message){
-            new_post_body = document.querySelector('#new-post-body').value = "";
-        }
+        document.querySelector('#new-post-body').value = "";
+        document.querySelector('#posts').innerHTML = "";
+        post_show(posts, "posts")
+        
     })
     .catch(err => {
         console.log(err);

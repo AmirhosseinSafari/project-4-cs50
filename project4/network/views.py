@@ -83,6 +83,7 @@ def register(request):
 
 
 @login_required
+@csrf_exempt
 def posts(request):
     if request.method == 'POST':
         
@@ -101,7 +102,9 @@ def posts(request):
         )
         post.save()
         
-        return JsonResponse({"message": "Your post saved successfully."}, status=201)
+        all_posts = Post.objects.order_by("-timestamp").all()
+
+        return JsonResponse([post.serialize() for post in all_posts], safe=False, status=201)
 
     # Preventing that a user post without login
     if  request.method == 'POST' and not request.user.is_authenticated:       
