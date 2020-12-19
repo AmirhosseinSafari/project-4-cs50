@@ -19,7 +19,7 @@ class Post(models.Model):
             "id": self.id,
             "owner": self.owner.username,
             "body": self.body,
-            "timestamp": self.timestamp.strftime("%A, %d. %B %d/%m/%Y %I:%M%p"),
+            "timestamp": self.timestamp.strftime("%A, %d. %B %Y %I:%M%p"),
             "likes_count": self.likes_count,
             "likers": [user.username for user in self.likers.all()]
         }

@@ -7,6 +7,8 @@ from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from datetime import datetime
+from functools import reduce
 
 from .models import User, Post, Follow
 
@@ -171,3 +173,25 @@ def update_following_followers(request):
 
     else:
         return HttpResponseRedirect(reverse("index"))
+
+@login_required
+def following(request, username):
+
+    user = User.objects.get(username=username)
+    person_user = Follow.objects.get(person=user)
+    followings = person_user.follows.all()
+
+    following_posts = []
+
+    for following in followings:
+
+        username_posts = Post.objects.filter( owner=following )
+        username_posts.order_by("-timestamp").all()
+        following_posts.append([post.serialize() for post in username_posts])
+
+
+    following_posts = reduce(lambda x,y: x+y, following_posts)
+    following_posts = sorted( following_posts, key=lambda x: datetime.strptime(x['timestamp'], '%A, %d. %B %Y %I:%M%p'), reverse=True)
+    
+    return JsonResponse( following_posts , status=200, safe=False)
+    

@@ -3,6 +3,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if( document.querySelector('#new-post-form') ){
         document.querySelector('#new-post-form').onsubmit = send_post;
     }
+    if( document.querySelector('#following') ){
+        document.querySelector('#following').addEventListener('click', () => following())
+    }
 
     document.querySelector('#follow-unfollow-btn').addEventListener('click', () => follow())
 
@@ -16,6 +19,7 @@ function load_box(){
     }
     document.querySelector('#posts').style.display = 'block';
     document.querySelector('#profile').style.display = 'none';
+    document.querySelector('#followings-posts').style.display = 'none';
 
     fetch('/posts')
     .then(response => response.json())
@@ -62,6 +66,7 @@ function profile(username){
         document.querySelector('#posts').style.display = 'none';
     }
     
+    document.querySelector('#followings-posts').style.display = 'none';
     document.querySelector('#profile').style.display = 'block';
 
     fetch(`/profile/${username}`)
@@ -82,6 +87,7 @@ function show_profile(data){
     document.querySelector('#new-post').style.display = 'none';
     document.querySelector('#posts').style.display = 'none';
     document.querySelector('#profile').style.display = 'block';
+    document.querySelector('#followings-posts').style.display = 'none';
 
     document.querySelector('#profile-username').innerHTML = data.profile.user;
     document.querySelector('#profile-Followings').innerHTML = data.profile.follows.length;
@@ -192,7 +198,6 @@ function follow(){
 
     if ( username_follow_info.followers.includes(logged_in_user) ){
 
-        //TODO: sending put request to loged in user, be added to user followers and him self followings
         fetch('/update_following_followers',{
             method: 'PUT',
             body: JSON.stringify({
@@ -231,4 +236,29 @@ function follow(){
           });
     }
 
+}
+
+function following(){
+    
+    document.querySelector('#new-post').style.display = 'none';
+    document.querySelector('#posts').style.display = 'none';
+    document.querySelector('#profile').style.display = 'none';
+    document.querySelector('#followings-posts').style.display = 'block';
+    document.querySelector('#followings-posts').innerHTML = "";
+
+    logged_in_username = document.querySelector('#logged-in-user').getAttribute("logged-in-user");
+    
+    fetch(`/following/${logged_in_username}`)
+    .then(response => response.json())
+    .then( users_posts => {
+        console.log(users_posts);
+
+        post_show(users_posts, "followings-posts") 
+        
+    })
+    .catch(err => {
+        console.log(err);
+    });
+
+    return false 
 }
