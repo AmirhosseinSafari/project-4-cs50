@@ -17,9 +17,9 @@ function load_box(){
     if( document.getElementById('#new-post-form') ){
         document.querySelector('#new-post-form').style.displlay = 'block';
     }
-    document.querySelector('#posts').style.display = 'block';
+    document.querySelector('#all-posts').style.display = 'block';
     document.querySelector('#profile').style.display = 'none';
-    document.querySelector('#followings-posts').style.display = 'none';
+    document.querySelector('#followings').style.display = 'none';
 
     fetch('/posts')
     .then(response => response.json())
@@ -27,6 +27,7 @@ function load_box(){
         console.log(posts);
         // Showwing posts
         post_show(posts, 'posts');
+        pagination(posts, 'li-all-posts');
     })
 
 }
@@ -48,6 +49,7 @@ function send_post(){
         document.querySelector('#new-post-body').value = "";
         document.querySelector('#posts').innerHTML = "";
         post_show(posts, "posts")
+        pagination(posts, 'li-all-posts');
         
     })
     .catch(err => {
@@ -62,11 +64,11 @@ function profile(username){
     if( document.getElementById('#new-post-form') ){
         document.querySelector('#new-post-form').style.display = 'none';
     }
-    if ( document.querySelector('#posts') ){
-        document.querySelector('#posts').style.display = 'none';
+    if ( document.querySelector('#all-posts') ){
+        document.querySelector('#all-posts').style.display = 'none';
     }
     
-    document.querySelector('#followings-posts').style.display = 'none';
+    document.querySelector('#followings').style.display = 'none';
     document.querySelector('#profile').style.display = 'block';
 
     fetch(`/profile/${username}`)
@@ -85,7 +87,7 @@ var username_follow_info;
 function show_profile(data){
 
     document.querySelector('#new-post').style.display = 'none';
-    document.querySelector('#posts').style.display = 'none';
+    document.querySelector('#all-posts').style.display = 'none';
     document.querySelector('#profile').style.display = 'block';
     document.querySelector('#followings-posts').style.display = 'none';
 
@@ -118,6 +120,9 @@ function show_profile(data){
 
     document.querySelector('#profile-posts').innerHTML = "";
     post_show(data.username_posts, 'profile-posts')
+    
+    pagination(data.username_posts, 'li-profile');
+
 }
 
 function post_show(posts, elemnet_id){
@@ -241,9 +246,9 @@ function follow(){
 function following(){
     
     document.querySelector('#new-post').style.display = 'none';
-    document.querySelector('#posts').style.display = 'none';
+    document.querySelector('#all-posts').style.display = 'none';
     document.querySelector('#profile').style.display = 'none';
-    document.querySelector('#followings-posts').style.display = 'block';
+    document.querySelector('#followings').style.display = 'block';
     document.querySelector('#followings-posts').innerHTML = "";
 
     logged_in_username = document.querySelector('#logged-in-user').getAttribute("logged-in-user");
@@ -253,7 +258,9 @@ function following(){
     .then( users_posts => {
         console.log(users_posts);
 
-        post_show(users_posts, "followings-posts") 
+        post_show(users_posts, "followings-posts")
+        
+        pagination(users_posts, 'li-followings');
         
     })
     .catch(err => {
@@ -261,4 +268,26 @@ function following(){
     });
 
     return false 
+}
+
+function pagination(posts, li_element){
+
+    li_counts = Math.floor(posts.length / 10) + 1;
+    div_li = document.querySelector(`#${li_element}`)
+    
+    let counter;
+    for(counter = 0; counter<li_counts ;counter++){
+        
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        var textnode_li = document.createTextNode(counter+1);
+        a.appendChild(textnode_li);
+        a.classList.add('page-link');
+        a.href="";
+        li.classList.add('page-item');
+        li.appendChild(a);
+        div_li.appendChild(li);    
+    
+    }
+
 }
