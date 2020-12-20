@@ -26,8 +26,7 @@ function load_box(){
     .then(posts => {
         console.log(posts);
         // Showwing posts
-        post_show(posts, 'posts');
-        pagination(posts, 'li-all-posts');
+        pagination(posts, 'li-all-posts', "posts");
     })
 
 }
@@ -48,8 +47,8 @@ function send_post(){
 
         document.querySelector('#new-post-body').value = "";
         document.querySelector('#posts').innerHTML = "";
-        post_show(posts, "posts")
-        pagination(posts, 'li-all-posts');
+    
+        pagination(posts, 'li-all-posts', "posts");
         
     })
     .catch(err => {
@@ -119,9 +118,8 @@ function show_profile(data){
     }
 
     document.querySelector('#profile-posts').innerHTML = "";
-    post_show(data.username_posts, 'profile-posts')
     
-    pagination(data.username_posts, 'li-profile');
+    pagination(data.username_posts, 'li-profile', "profile-posts");
 
 }
 
@@ -257,10 +255,8 @@ function following(){
     .then(response => response.json())
     .then( users_posts => {
         console.log(users_posts);
-
-        post_show(users_posts, "followings-posts")
         
-        pagination(users_posts, 'li-followings');
+        pagination(users_posts, 'li-followings', "followings-posts");
         
     })
     .catch(err => {
@@ -270,7 +266,12 @@ function following(){
     return false 
 }
 
-function pagination(posts, li_element){
+function pagination(posts, li_element, destination){
+
+    //TODO: Active page number (pagination) button To adding next and previous button functionality
+    // getting active button, clearing active class first then give the active class to clicked button
+
+    post_show(posts, destination);
 
     li_counts = Math.floor(posts.length / 10) + 1;
     div_li = document.querySelector(`#${li_element}`)
@@ -283,11 +284,34 @@ function pagination(posts, li_element){
         var textnode_li = document.createTextNode(counter+1);
         a.appendChild(textnode_li);
         a.classList.add('page-link');
-        a.href="";
         li.classList.add('page-item');
         li.appendChild(a);
+        li.id = `#${li_element}-${counter+1}`
+        li.onclick = function(){
+            pagination_slicer(posts, li.id, destination);
+        }
         div_li.appendChild(li);    
+   
+    }
+}
+
+function pagination_slicer(posts, li_id, destination){   
+
+    len_posts = posts.length;
+    li_id_splited = li_id.split("-");
+    partition =  li_id_splited[ li_id_splited.length-1 ];
     
+    document.querySelector(`#${destination}`).innerHTML = "";
+
+    if ( len_posts % 10 == 0 || partition != len_posts ){
+        
+        post_show( posts.slice(partition*10 - 10, partition*10), destination );
+
+    }
+    else{
+              
+        post_show( posts.slice(partition*10 -10, len_posts ), destination );
+
     }
 
 }
