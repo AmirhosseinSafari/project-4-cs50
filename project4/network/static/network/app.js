@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('#following').addEventListener('click', () => following())
     }
 
-    document.querySelector('#follow-unfollow-btn').addEventListener('click', () => follow())
+    document.querySelector('#follow-unfollow-btn').addEventListener('click', () => follow()) 
 
     load_box();
 });
@@ -268,14 +268,31 @@ function following(){
 
 function pagination(posts, li_element, destination){
 
-    //TODO: Active page number (pagination) button To adding next and previous button functionality
-    // getting active button, clearing active class first then give the active class to clicked button
+    //TODO: Adding next and previous button functionality
+    document.querySelector(`#${li_element}`).innerHTML = "";
 
-    post_show(posts, destination);
-
-    li_counts = Math.floor(posts.length / 10) + 1;
+    li_counts = Math.floor(posts.length / 11) + 1;
     div_li = document.querySelector(`#${li_element}`)
+    div_li.style.display = "flex"; 
     
+    previous_button = document.createElement("li");
+    previous_button.classList.add("page-item");
+    previous_button_a = document.createElement("a");
+    previous_button_a.classList.add("page-link");
+    previous_button_a.setAttribute("tabindex", "-1");
+    previous_button_a.setAttribute("aria-disabled", "true");
+    previous_button_a_text = document.createTextNode("Previous");
+    previous_button_a.appendChild(previous_button_a_text);
+    previous_button.appendChild(previous_button_a);
+    previous_button.id = `previous-${destination}`
+    previous_button.onclick = function(){
+        next_li = next_previous_button("previous", li_element, posts);
+        console.log(next_li)
+        pagination_slicer(posts, next_li, li_element, destination, "previous");
+    }
+    div_li.appendChild(previous_button);
+
+
     let counter;
     for(counter = 0; counter<li_counts ;counter++){
         
@@ -286,17 +303,69 @@ function pagination(posts, li_element, destination){
         a.classList.add('page-link');
         li.classList.add('page-item');
         li.appendChild(a);
-        li.id = `#${li_element}-${counter+1}`
+        li.id = `${li_element}-${counter+1}`
         li.onclick = function(){
-            pagination_slicer(posts, li.id, destination);
+            pagination_slicer(posts, li.id, li_element, destination, "");
         }
         div_li.appendChild(li);    
    
     }
+
+    next_button = document.createElement("li");
+    next_button.classList.add("page-item");
+    next_button_a = document.createElement("a");
+    next_button_a.classList.add("page-link");    
+    next_button_a_text = document.createTextNode("Next");
+    next_button_a.appendChild(next_button_a_text);
+    next_button.appendChild(next_button_a);
+    next_button.id = `next-${destination}`
+    next_button.onclick = function(){
+       next_li = next_previous_button("next", li_element, posts);
+       console.log(next_li)
+       pagination_slicer(posts, next_li, li_element, destination, "next");
+    }
+    div_li.appendChild(next_button);
+
+    // For first time rendering we call it
+    pagination_slicer(posts, `${li_element}-1`, li_element, destination, "");
+
+    if ( document.querySelector(`#${li_element}-1`).classList.contains('active') ){
+        previous_button.classList.add("disabled");
+    }
+    else if( previous_button.classList.contains("disabled") ){
+        previous_button.classList.remove("disabled");
+    }
+
+    if ( document.querySelector(`#${li_element}-${li_counts}`).classList.contains('active') ){
+        next_button.classList.add("disabled");
+    }
+    else if( next_button.classList.contains("disabled") ){
+        next_button.classList.remove("disabled");
+    }
+
 }
 
-function pagination_slicer(posts, li_id, destination){   
+function pagination_slicer(posts, li_id, li_element , destination, next_or_not){
+     
+    if ( next_or_not != "previous" && next_or_not != "next"){
+        window.onclick = e => {
+            li_id = li_element + "-" + e.target.innerText;
+            if ( e.target.innerText != "Next" && e.target.innerText != "Previous" ){
+                pagination_slicer(posts, li_id, li_element, destination, "");
+            }
+        }
+    }
 
+    li_count = Math.floor(posts.length / 11) + 1;
+
+    for(count = 1; count<=li_count ; count++){
+        if( document.querySelector(`#${li_element}-${count}`).classList.contains('active') ){
+            document.querySelector(`#${li_element}-${count}`).classList.remove('active');
+        }
+    }
+    console.log(li_id)
+    document.querySelector(`#${li_id}`).classList.add("active");
+    
     len_posts = posts.length;
     li_id_splited = li_id.split("-");
     partition =  li_id_splited[ li_id_splited.length-1 ];
@@ -312,6 +381,46 @@ function pagination_slicer(posts, li_id, destination){
               
         post_show( posts.slice(partition*10 -10, len_posts ), destination );
 
+    }
+
+    // next and previous button status checker
+    if ( document.querySelector(`#${li_element}-1`).classList.contains('active') ){
+        document.querySelector(`#previous-${destination}`).classList.add("disabled");
+    }
+    else if( previous_button.classList.contains("disabled") ){
+        document.querySelector(`#previous-${destination}`).classList.remove("disabled");
+    }
+
+    if ( document.querySelector(`#${li_element}-${li_counts}`).classList.contains('active') ){
+        document.querySelector(`#next-${destination}`).classList.add("disabled");
+    }
+    else if( next_button.classList.contains("disabled") ){
+        document.querySelector(`#next-${destination}`).classList.remove("disabled");
+    }
+
+}
+
+function next_previous_button(button_name , li_element, posts){
+
+    li_number = Math.floor(posts.length / 11) + 1;
+    var removed_active_li_element_number;
+
+    for(count = 1; count<=li_number ; count++){
+        if( document.querySelector(`#${li_element}-${count}`).classList.contains('active') ){
+            removed_active_li_element_number = count;
+        }
+    }
+    
+    
+    if (button_name == "next"){
+        removed_active_li_element_number++;
+        li_id = li_element + "-" + removed_active_li_element_number;
+        return li_id
+    }
+    if (button_name == "previous"){
+        removed_active_li_element_number--;
+        li_id = li_element + "-" + removed_active_li_element_number;
+        return li_id
     }
 
 }
