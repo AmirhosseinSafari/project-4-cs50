@@ -165,19 +165,75 @@ function post_show(posts, elemnet_id){
     var textnode_like_span = document.createTextNode("Like " + post.likes_count);
     like_span.appendChild(textnode_like_span);
     card_body.appendChild(like_span);
+
     
+    //TOOD: sending put request and showing the user if he liked the post
     var heart = document.createElement("div");
     var i_heart = document.createElement("i");
-    i_heart.style.color = "red"; 
-    i_heart.classList.add('fa');
-    i_heart.classList.add('fa-heart-o');
-    heart.appendChild(i_heart);
-    heart.onclick = function(){
+    i_heart.style.color = "red";
+    i_heart.classList.add("heart");
+    i_heart.classList.add("fa");
+
+    if ( post.likers.includes( logged_in_user ) ){
+
         if( i_heart.classList.contains("fa-heart-o") ){
             i_heart.classList.remove("fa-heart-o");
             i_heart.classList.add("fa-heart");
         }
         else{
+            i_heart.classList.add("fa-heart");
+        }
+
+    }
+    else{
+
+        if( i_heart.classList.contains("fa-heart") ){
+            i_heart.classList.remove("fa-heart");
+            i_heart.classList.add("fa-heart-o");
+        }
+        else{
+            i_heart.classList.add("fa-heart-o");
+        }
+
+    }
+
+    heart.appendChild(i_heart);
+    heart.onclick = function(){
+        if( i_heart.classList.contains("fa-heart-o") ){
+            
+            //put request
+            fetch(`like/${post.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                like: true
+                })
+            })
+            .then(response => response.json())
+            .then(posts => {
+              console.log(posts);
+              // Showing posts
+              pagination(posts, 'li-all-posts', "posts");
+            })
+
+            i_heart.classList.remove("fa-heart-o");
+            i_heart.classList.add("fa-heart");
+        }
+        else{
+
+            //put request
+            fetch(`like/${post.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                like: false
+                })
+            })
+            .then(response => response.json())
+            .then(posts => {
+              console.log(posts);
+              // Showing posts
+              pagination(posts, 'li-all-posts', "posts");
+            })
+
             i_heart.classList.remove("fa-heart");
             i_heart.classList.add("fa-heart-o");
         }

@@ -221,3 +221,35 @@ def edit(request, id):
 
     else:
         return HttpResponseRedirect(reverse("index"))
+
+
+@login_required
+@csrf_exempt
+def like(request, id):
+
+    if request.method == 'PUT':
+        
+        data = json.loads(request.body)
+
+        like_status = data.get("like", "")
+
+        post = Post.objects.get(id=id)
+        all_posts = Post.objects.order_by("-timestamp").all()   
+
+        if like_status == True:
+
+            post.likers.add( request.user )
+            post.likes_count = post.likes_count + 1 
+            post.save()
+            return JsonResponse([post.serialize() for post in all_posts], safe=False, status=201)
+
+
+        else:
+
+            post.likers.remove( request.user )
+            post.likes_count = post.likes_count - 1
+            post.save()
+            return JsonResponse([post.serialize() for post in all_posts], safe=False, status=201)
+
+    else:
+        return HttpResponseRedirect(reverse("index"))
