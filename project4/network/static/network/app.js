@@ -7,7 +7,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('#following').addEventListener('click', () => following())
     }
 
-    document.querySelector('#follow-unfollow-btn').addEventListener('click', () => follow()) 
+    document.querySelector('#follow-unfollow-btn').addEventListener('click', () => follow())
+    nav_username = document.querySelector('#nav-username').innerHTML;
+    document.querySelector('#nav-username').addEventListener('click', () => profile( nav_username )) 
 
     load_box();
 });
@@ -46,7 +48,7 @@ function send_post(){
         console.log(posts);
 
         document.querySelector('#new-post-body').value = "";
-        document.querySelector('#posts').innerHTML = "";
+        document.querySelector('#posts').innerText = "";
     
         pagination(posts, 'li-all-posts', "posts");
         
