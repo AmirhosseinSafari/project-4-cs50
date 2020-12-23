@@ -25,7 +25,7 @@ function load_box(){
     .then(response => response.json())
     .then(posts => {
         console.log(posts);
-        // Showwing posts
+        // Showing posts
         pagination(posts, 'li-all-posts', "posts");
     })
 
@@ -126,6 +126,7 @@ function show_profile(data){
 function post_show(posts, elemnet_id){
 
     posts_div = document.getElementById(elemnet_id);
+    logged_in_user = document.querySelector('#logged-in-user').getAttribute("logged-in-user");
 
     posts.forEach(post => {
 
@@ -182,6 +183,20 @@ function post_show(posts, elemnet_id){
         }
     }
     card_body.appendChild(heart);
+
+    if ( logged_in_user == post.owner ){
+
+        var edit_button = document.createElement("button");
+        var textnode_edit_button = document.createTextNode("Edit");
+        edit_button.appendChild(textnode_edit_button);
+        edit_button.classList.add("btn");
+        edit_button.classList.add("btn-info");
+        edit_button.onclick = function(){
+            edit_post(post, elemnet_id);
+        }
+        card_body.appendChild(edit_button);
+
+    }
 
     });
 
@@ -268,12 +283,12 @@ function following(){
 
 function pagination(posts, li_element, destination){
 
-    //TODO: Adding next and previous button functionality
     document.querySelector(`#${li_element}`).innerHTML = "";
 
     li_counts = Math.floor(posts.length / 11) + 1;
     div_li = document.querySelector(`#${li_element}`)
-    div_li.style.display = "flex"; 
+    div_li.style.display = "flex";
+    div_li.style.cursor = "pointer";
     
     previous_button = document.createElement("li");
     previous_button.classList.add("page-item");
@@ -331,6 +346,7 @@ function pagination(posts, li_element, destination){
 
     if ( document.querySelector(`#${li_element}-1`).classList.contains('active') ){
         previous_button.classList.add("disabled");
+        previous_button.style.cursor = "default";
     }
     else if( previous_button.classList.contains("disabled") ){
         previous_button.classList.remove("disabled");
@@ -338,6 +354,7 @@ function pagination(posts, li_element, destination){
 
     if ( document.querySelector(`#${li_element}-${li_counts}`).classList.contains('active') ){
         next_button.classList.add("disabled");
+        next_button.style.cursor = "default";
     }
     else if( next_button.classList.contains("disabled") ){
         next_button.classList.remove("disabled");
@@ -350,7 +367,10 @@ function pagination_slicer(posts, li_id, li_element , destination, next_or_not){
     if ( next_or_not != "previous" && next_or_not != "next"){
         window.onclick = e => {
             li_id = li_element + "-" + e.target.innerText;
-            if ( e.target.innerText != "Next" && e.target.innerText != "Previous" ){
+
+            // if innertext is a number
+            console.log(e.target.innerText)
+            if ( !isNaN( e.target.innerText ) && e.target.innerText != "" ){  
                 pagination_slicer(posts, li_id, li_element, destination, "");
             }
         }
@@ -386,16 +406,20 @@ function pagination_slicer(posts, li_id, li_element , destination, next_or_not){
     // next and previous button status checker
     if ( document.querySelector(`#${li_element}-1`).classList.contains('active') ){
         document.querySelector(`#previous-${destination}`).classList.add("disabled");
+        document.querySelector(`#previous-${destination}`).style.cursor = "default";
     }
     else if( previous_button.classList.contains("disabled") ){
         document.querySelector(`#previous-${destination}`).classList.remove("disabled");
+        document.querySelector(`#previous-${destination}`).style.cursor = "pointer";
     }
 
     if ( document.querySelector(`#${li_element}-${li_counts}`).classList.contains('active') ){
         document.querySelector(`#next-${destination}`).classList.add("disabled");
+        document.querySelector(`#next-${destination}`).style.cursor = "default";
     }
     else if( next_button.classList.contains("disabled") ){
         document.querySelector(`#next-${destination}`).classList.remove("disabled");
+        document.querySelector(`#next-${destination}`).style.cursor = "pointer";
     }
 
 }
@@ -423,4 +447,72 @@ function next_previous_button(button_name , li_element, posts){
         return li_id
     }
 
+}
+
+function edit_post(post, element_id){
+
+    console.log(element_id)
+    container = document.querySelector(`#${element_id}`)
+    container.style.display = 'block';
+    container.innerHTML = "";
+    
+
+    card = document.createElement("div");
+    card.classList.add('card');
+    card.setAttribute("style", "width: 50rem;");
+    container.appendChild(card);
+
+    card_body = document.createElement("div");
+    card_body.classList.add('card-body');
+    card.appendChild(card_body);
+
+    card_title = document.createElement("h5");
+    textnode_card_title = document.createTextNode(post.owner);
+    card_title.appendChild(textnode_card_title);
+    card_body.appendChild(card_title);
+    card_title.style.cursor = "pointer"; 
+    card_title.onclick = function(){
+        profile(post.owner);
+    }
+
+    card_subtitle = document.createElement("h6");
+    card_subtitle.classList.add('card-subtitle');
+    card_subtitle.classList.add('mb-2');
+    card_subtitle.classList.add('text-muted');
+    textnode_card_subtitle = document.createTextNode(post.timestamp);
+    card_subtitle.appendChild(textnode_card_subtitle);
+    card_body.appendChild(card_subtitle)
+
+    card_text = document.createElement("textarea");
+    textnode_card_text = document.createTextNode(post.body);
+    card_text.id = "edit-textarea"
+    card_text.appendChild(textnode_card_text);
+    card_body.appendChild(card_text);
+
+    br = document.createElement("br");
+    card_body.appendChild(br);
+
+    save_edit_button = document.createElement("button");
+    textnode_save_edit_button = document.createTextNode("Save");
+    save_edit_button.appendChild(textnode_save_edit_button);
+    save_edit_button.classList.add("btn");
+    save_edit_button.classList.add("btn-success");
+    save_edit_button.onclick = function(){
+        console.log( post.id )
+        //put request
+        fetch(`edit/${post.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                body: card_text.value
+            })
+          })
+          .then(response => response.json())
+          .then(posts => {
+            console.log(posts);
+            // Showing posts
+            card.remove()
+            pagination(posts, 'li-all-posts', "posts");
+        })
+    }
+    card_body.appendChild(save_edit_button);
 }

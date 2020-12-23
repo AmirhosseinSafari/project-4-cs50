@@ -195,3 +195,29 @@ def following(request, username):
     
     return JsonResponse( following_posts , status=200, safe=False)
     
+@login_required
+@csrf_exempt
+def edit(request, id):
+
+    if request.method == 'PUT':
+        
+        data = json.loads(request.body)
+
+        edited_body = data.get("body", "")
+
+        post = Post.objects.get(id=id)
+
+        if post.owner == request.user:
+
+            post.body = edited_body
+            post.save()
+
+            all_posts = Post.objects.order_by("-timestamp").all()
+
+            return JsonResponse([post.serialize() for post in all_posts], safe=False, status=201)
+        
+        else:
+            return JsonResponse("You are not owner of the post!" ,status=403)
+
+    else:
+        return HttpResponseRedirect(reverse("index"))
