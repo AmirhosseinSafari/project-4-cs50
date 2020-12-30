@@ -90,6 +90,7 @@ function show_profile(data){
     document.querySelector('#new-post').style.display = 'none';
     document.querySelector('#all-posts').style.display = 'none';
     document.querySelector('#profile').style.display = 'block';
+    document.querySelector('#follow-button').style.display = 'block';
     document.querySelector('#followings-posts').style.display = 'none';
 
     document.querySelector('#profile-username').innerHTML = data.profile.user;
