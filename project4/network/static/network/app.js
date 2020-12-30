@@ -169,7 +169,6 @@ function post_show(posts, elemnet_id){
     card_body.appendChild(like_span);
 
     
-    //TOOD: sending put request and showing the user if he liked the post
     var heart = document.createElement("div");
     var i_heart = document.createElement("i");
     i_heart.style.color = "red";
@@ -320,6 +319,7 @@ function following(){
     document.querySelector('#all-posts').style.display = 'none';
     document.querySelector('#profile').style.display = 'none';
     document.querySelector('#followings').style.display = 'block';
+    document.querySelector('#followings-posts').style.display = 'block';
     document.querySelector('#followings-posts').innerHTML = "";
 
     logged_in_username = document.querySelector('#logged-in-user').getAttribute("logged-in-user");
